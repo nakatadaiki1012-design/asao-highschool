@@ -2568,44 +2568,6 @@ const ALIGN_KEY = "asao-aerial-align";
 let align = { ...AERIAL_ALIGN };
 try { Object.assign(align, JSON.parse(localStorage.getItem(ALIGN_KEY) || "{}")); } catch { /* 保存なし */ }
 aerial.setAlign(align);
-const aerialBtn = document.getElementById("aerial-btn");
-const alignPanel = document.getElementById("align-panel");
-const aerialMsg = document.getElementById("aerial-msg");
-function setAerial(on) {
-  aerial.holder.visible = on;
-  farGround.visible = ground.visible = paving.visible = trees.visible = site.group.visible = outdoor.visible = siteGround.visible = !on;
-  aerialBtn.classList.toggle("active", on);
-  document.body.classList.toggle("aerial-on", on);
-  document.getElementById("aerial-credit").hidden = !on;
-  document.getElementById("align-open").hidden = !on; // 位置合わせは航空写真のときだけ
-  if (!on) { alignPanel.hidden = true; return; }
-  aerialMsg.textContent = "航空写真を読み込み中…";
-  aerial.load().then(() => { aerialMsg.textContent = ""; })
-    .catch(() => { aerialMsg.textContent = "航空写真を読み込めませんでした（インターネット接続を確認してください）"; });
-}
-aerialBtn.addEventListener("click", () => setAerial(!aerial.holder.visible));
-document.getElementById("align-open").addEventListener("click", () => { alignPanel.hidden = !alignPanel.hidden; });
-const alignInputs = alignPanel.querySelectorAll("input[type=range]");
-function showAlign() {
-  alignInputs.forEach((inp) => {
-    inp.value = align[inp.name];
-    inp.nextElementSibling.textContent = Number(align[inp.name]).toFixed(inp.name === "scale" ? 2 : 1);
-  });
-  document.getElementById("align-code").textContent = `rot: ${align.rot}, x: ${align.x}, z: ${align.z}, scale: ${align.scale}`;
-}
-alignInputs.forEach((inp) => inp.addEventListener("input", () => {
-  align[inp.name] = Number(inp.value);
-  aerial.setAlign(align);
-  showAlign();
-  try { localStorage.setItem(ALIGN_KEY, JSON.stringify(align)); } catch { /* 保存できない環境 */ }
-}));
-document.getElementById("align-reset").addEventListener("click", () => {
-  align = { ...AERIAL_ALIGN };
-  aerial.setAlign(align);
-  showAlign();
-  try { localStorage.removeItem(ALIGN_KEY); } catch { /* 保存できない環境 */ }
-});
-showAlign();
 
 
 // 地図・学校情報
@@ -2991,7 +2953,6 @@ function bestYaw(f, pref) {
 function setExplore(on) {
   if (on === ex.on) return;
   ex.on = on;
-  document.getElementById("walk-btn").classList.toggle("active", on);
   document.body.classList.toggle("exploring", on);
   if (on) {
     ex.saved = [persp.position.clone(), controls3d.target.clone()];
@@ -3050,7 +3011,6 @@ function updateExplore(dt) {
   controls3d.target.copy(eye).add(look);
   persp.lookAt(controls3d.target);
 }
-document.getElementById("walk-btn").addEventListener("click", () => setExplore(!ex.on));
 // キーボード（探検中は、カメラの操作のかわりに歩く）
 window.addEventListener("keydown", (e) => {
   if (!ex.on || e.target.closest?.("input, textarea")) return;
